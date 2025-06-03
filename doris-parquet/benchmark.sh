@@ -2,7 +2,7 @@
 
 set -ex
 
-# This benchmark should run on Ubuntu 20.04
+# This benchmark should run on Ubuntu 22.04
 
 # Install
 url='https://apache-doris-releases.oss-accelerate.aliyuncs.com/apache-doris-3.0.5-bin-x64.tar.gz'
@@ -27,7 +27,7 @@ set -e
 # Uncompress
 mkdir "$dir_name"
 tar zxf "$file_name" -C "$dir_name"
-DORIS_HOME="$ROOT/$dir_name/apache-doris-3.0.5-bin-x64"
+DORIS_HOME="$dir_name/apache-doris-3.0.5-bin-x64"
 export DORIS_HOME
 
 # Install dependencies
@@ -74,10 +74,12 @@ while true; do
     fi
 done
 
-# Use for Doris (Parquet, partitioned)
+# Download Parquet files
+cd "$DORIS_HOME/be"
 seq 0 99 | xargs -P100 -I{} bash -c 'wget --continue https://datasets.clickhouse.com/hits_compatible/athena_partitioned/hits_{}.parquet'
+cd -
 
 # Run the queries
-mysql -h localhost -P9030 -uroot test -vvv < create.sql
+mysql -h127.1 -P9030 -uroot -vvv < create.sql
 ./run.sh 2>&1 | tee run.log
 date
